@@ -1,0 +1,19 @@
+export const requireRole = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.profile) {
+      return res.status(401).json({
+        success: false,
+        message: "User profile not found",
+      });
+    }
+
+    if (!allowedRoles.includes(req.profile.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to access this resource",
+      });
+    }
+
+    next();
+  };
+};

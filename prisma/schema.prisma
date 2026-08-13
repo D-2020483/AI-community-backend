@@ -1,0 +1,79 @@
+// This is Prisma schema file,
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CITIZEN
+  ADMIN
+  AUTHORITY
+  OFFICER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model Profile {
+  id                 String            @id
+  fullName           String            @map("full_name")
+  email              String            @unique
+  phone              String?
+  role               UserRole          @default(CITIZEN)
+  invitationStatus   InvitationStatus? @map("invitation_status")
+  invitationToken    String?           @unique @map("invitation_token")
+  isPasswordSet      Boolean           @default(false) @map("is_password_set")
+  passwordResetToken String?           @unique @map("password_reset_token")
+  createdBy          String?           @map("created_by")
+  invitedAt          DateTime?         @map("invited_at")
+  acceptedAt         DateTime?         @map("accepted_at")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  authority Authority?
+  officer   Officer?
+
+  @@map("profiles")
+}
+
+model Authority {
+  id          String   @id @default(uuid())
+  profileId   String   @unique @map("profile_id")
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String?
+  address     String?
+  coverage    String?
+  district    String?
+  description String?
+  status      String   @default("Active")
+  officers    Officer[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("authorities")
+}
+
+model Officer {
+  id          String    @id @default(uuid())
+  profileId   String    @unique @map("profile_id")
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  authorityId String    @map("authority_id")
+  authority   Authority @relation(fields: [authorityId], references: [id])
+  position    String?
+  department  String?
+  status      String    @default("Active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("officers")
+}
