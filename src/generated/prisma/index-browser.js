@@ -162,6 +162,24 @@ exports.Prisma.OfficerScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ComplaintScalarFieldEnum = {
+  id: 'id',
+  reportId: 'reportId',
+  description: 'description',
+  location: 'location',
+  imageUrl: 'imageUrl',
+  category: 'category',
+  assignedAuthority: 'assignedAuthority',
+  detectedIssue: 'detectedIssue',
+  priority: 'priority',
+  confidence: 'confidence',
+  reason: 'reason',
+  status: 'status',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -193,7 +211,8 @@ exports.InvitationStatus = exports.$Enums.InvitationStatus = {
 exports.Prisma.ModelName = {
   Profile: 'Profile',
   Authority: 'Authority',
-  Officer: 'Officer'
+  Officer: 'Officer',
+  Complaint: 'Complaint'
 };
 
 /**

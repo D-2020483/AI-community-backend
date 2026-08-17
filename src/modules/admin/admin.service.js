@@ -1,5 +1,6 @@
 import prisma from "../../config/database.js";
 import { getSupabaseAdmin } from "../../config/supabaseAdmin.js";
+import { sendInvitationEmail } from "../../utils/email.js";
 import {
   generateInvitationToken,
   generateTemporaryPassword,
@@ -102,10 +103,20 @@ export const createAuthority = async (adminId, data) => {
     },
   });
 
+  const emailStatus = await sendInvitationEmail({
+    to: data.email,
+    fullName: data.name,
+    tempPassword: password,
+    inviteUrl,
+    role: "AUTHORITY",
+    authorityName: data.name,
+  });
+
   return {
     authority,
     tempPassword: password,
     inviteUrl,
+    emailStatus,
   };
 };
 
@@ -143,10 +154,20 @@ export const createOfficer = async (adminId, data) => {
     },
   });
 
+  const emailStatus = await sendInvitationEmail({
+    to: data.email,
+    fullName,
+    tempPassword: password,
+    inviteUrl,
+    role: "OFFICER",
+    authorityName: authority.name,
+  });
+
   return {
     officer,
     tempPassword: password,
     inviteUrl,
+    emailStatus,
   };
 };
 
@@ -202,6 +223,140 @@ export const resetOfficerPassword = async (officerId) => {
   });
 
   return { tempPassword, email: officer.profile.email };
+};
+
+// Authority status and lifecycle management
+export const toggleAuthorityStatus = async (authorityId) => {
+  const authority = await prisma.authority.findUnique({
+    where: { id: authorityId },
+    include: { profile: true, officers: true },
+  });
+
+  if (!authority) {
+    throw new Error("Authority not found");
+  }
+
+  const newStatus = authority.status === "Active" ? "Inactive" : "Active";
+
+  const updated = await prisma.authority.update({
+    where: { id: authorityId },
+    data: { status: newStatus },
+    include: { profile: true, officers: { include: { profile: true } } },
+  });
+
+  return updated;
+};
+
+export const updateAuthority = async (authorityId, data) => {
+  const authority = await prisma.authority.findUnique({
+    where: { id: authorityId },
+  });
+
+  if (!authority) {
+    throw new Error("Authority not found");
+  }
+
+  const updated = await prisma.authority.update({
+    where: { id: authorityId },
+    data: {
+      name: data.name || authority.name,
+      phone: data.phone !== undefined ? data.phone : authority.phone,
+      address: data.address !== undefined ? data.address : authority.address,
+      coverage: data.coverage !== undefined ? data.coverage : authority.coverage,
+      district: data.district !== undefined ? data.district : authority.district,
+      description: data.description !== undefined ? data.description : authority.description,
+    },
+    include: { profile: true, officers: { include: { profile: true } } },
+  });
+
+  return updated;
+};
+
+export const deleteAuthority = async (authorityId) => {
+  const authority = await prisma.authority.findUnique({
+    where: { id: authorityId },
+    include: { profile: true },
+  });
+
+  if (!authority) {
+    throw new Error("Authority not found");
+  }
+
+  // Delete from Supabase auth
+  const supabaseAdmin = getSupabaseAdmin();
+  await supabaseAdmin.auth.admin.deleteUser(authority.profile.id);
+
+  // Delete authority (cascade will handle profile and officers)
+  await prisma.authority.delete({
+    where: { id: authorityId },
+  });
+
+  return { success: true, message: "Authority deleted successfully" };
+};
+
+// Officer status and lifecycle management
+export const toggleOfficerStatus = async (officerId) => {
+  const officer = await prisma.officer.findUnique({
+    where: { id: officerId },
+    include: { profile: true, authority: true },
+  });
+
+  if (!officer) {
+    throw new Error("Officer not found");
+  }
+
+  const newStatus = officer.status === "Active" ? "Inactive" : "Active";
+
+  const updated = await prisma.officer.update({
+    where: { id: officerId },
+    data: { status: newStatus },
+    include: { profile: true, authority: true },
+  });
+
+  return updated;
+};
+
+export const updateOfficer = async (officerId, data) => {
+  const officer = await prisma.officer.findUnique({
+    where: { id: officerId },
+  });
+
+  if (!officer) {
+    throw new Error("Officer not found");
+  }
+
+  const updated = await prisma.officer.update({
+    where: { id: officerId },
+    data: {
+      position: data.position !== undefined ? data.position : officer.position,
+      department: data.department !== undefined ? data.department : officer.department,
+    },
+    include: { profile: true, authority: true },
+  });
+
+  return updated;
+};
+
+export const deleteOfficer = async (officerId) => {
+  const officer = await prisma.officer.findUnique({
+    where: { id: officerId },
+    include: { profile: true },
+  });
+
+  if (!officer) {
+    throw new Error("Officer not found");
+  }
+
+  // Delete from Supabase auth
+  const supabaseAdmin = getSupabaseAdmin();
+  await supabaseAdmin.auth.admin.deleteUser(officer.profile.id);
+
+  // Delete officer (cascade will handle profile)
+  await prisma.officer.delete({
+    where: { id: officerId },
+  });
+
+  return { success: true, message: "Officer deleted successfully" };
 };
 
 export { profileInclude, INVITE_EXPIRY_DAYS };

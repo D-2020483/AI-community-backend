@@ -77,3 +77,24 @@ model Officer {
 
   @@map("officers")
 }
+
+model Complaint {
+  id                String   @id @default(uuid())
+  reportId          String   @unique @map("report_id")
+  description       String
+  location          String
+  imageUrl          String?  @map("image_url")
+  category          String
+  assignedAuthority String   @map("assigned_authority")
+  detectedIssue     String   @map("detected_issue")
+  priority          String   @default("MEDIUM")
+  confidence        Float?
+  reason            String?
+  status            String   @default("SUBMITTED")
+  userId            String?  @map("user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("complaints")
+}
