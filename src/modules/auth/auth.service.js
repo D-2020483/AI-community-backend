@@ -27,8 +27,27 @@ function assertInviteNotExpired(profile) {
   }
 }
 
-export const loginUser = async ({ email, password }) => {
+export const loginUser = async ({ email, password, expectedRole, inviteToken }) => {
   const normalizedEmail = email.toLowerCase().trim();
+  const token = typeof inviteToken === "string" ? inviteToken.trim() : "";
+
+  if (token) {
+    const inviteProfile = await prisma.profile.findUnique({
+      where: { invitationToken: token },
+    });
+
+    if (!inviteProfile) {
+      throw new Error(
+        "This login link has already been used. Open the login page, select your role, and sign in.",
+      );
+    }
+
+    if (inviteProfile.email !== normalizedEmail) {
+      throw new Error(
+        "This login link does not match the email you entered.",
+      );
+    }
+  }
 
   const { data: authData, error: authError } =
     await supabase.auth.signInWithPassword({
@@ -57,9 +76,75 @@ export const loginUser = async ({ email, password }) => {
     throw new Error("This account invitation has expired");
   }
 
+  if (profile.status === "Inactive") {
+    throw new Error(
+      "This account has been deactivated. Contact your administrator.",
+    );
+  }
+
   assertInviteNotExpired(profile);
 
-  return buildLoginPayload(profile, authData.session);
+  const mappedRole = String(profile.role || "").toLowerCase();
+  if (
+    (profile.role === "AUTHORITY" || profile.role === "OFFICER") &&
+    expectedRole &&
+    expectedRole !== mappedRole
+  ) {
+    throw new Error(
+      `Select ${profile.role === "AUTHORITY" ? "Authority" : "Officer"} on the login page before signing in.`,
+    );
+  }
+
+  if (profile.role === "AUTHORITY" || profile.role === "OFFICER") {
+    if (token && profile.invitationToken !== token) {
+      throw new Error(
+        "This login link has already been used. Open the login page, select your role, and sign in.",
+      );
+    }
+
+    if (profile.invitationToken) {
+      await prisma.profile.update({
+        where: { id: profile.id },
+        data: {
+          invitationToken: null,
+          invitationStatus: "ACCEPTED",
+          acceptedAt: profile.acceptedAt || new Date(),
+        },
+      });
+    }
+  }
+
+  return buildLoginPayload(
+    { ...profile, invitationToken: null, invitationStatus: "ACCEPTED" },
+    authData.session,
+  );
+};
+
+export const getLoginInvite = async (token) => {
+  const profile = await prisma.profile.findUnique({
+    where: { invitationToken: token },
+    include: profileInclude,
+  });
+
+  if (!profile) {
+    throw new Error(
+      "This login link has already been used. Open the login page, select your role, and sign in.",
+    );
+  }
+
+  if (profile.role !== "AUTHORITY" && profile.role !== "OFFICER") {
+    throw new Error("This login link is invalid.");
+  }
+
+  assertInviteNotExpired(profile);
+
+  return {
+    valid: true,
+    email: profile.email,
+    fullName: profile.fullName,
+    role: profile.role,
+    authorityName: profile.authority?.name || profile.officer?.authority?.name,
+  };
 };
 
 export const getCurrentUser = async (accessToken) => {

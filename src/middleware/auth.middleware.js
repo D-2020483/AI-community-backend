@@ -47,6 +47,13 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
+    if (profile.status === "Inactive") {
+      return res.status(403).json({
+        success: false,
+        message: "This account has been deactivated. Contact your administrator.",
+      });
+    }
+
     req.user = data.user;
     req.profile = profile;
     req.accessToken = token;

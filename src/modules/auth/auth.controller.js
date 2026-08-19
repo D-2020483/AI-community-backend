@@ -2,6 +2,7 @@ import {
   registerCitizen,
   loginUser,
   getInviteByToken,
+  getLoginInvite,
   acceptInvite,
   changePassword,
 } from "./auth.service.js";
@@ -74,6 +75,18 @@ export const getInvite = async (req, res, next) => {
   try {
     const invite = await getInviteByToken(req.params.token);
 
+    res.status(200).json({
+      success: true,
+      data: { invite },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLoginInviteStatus = async (req, res, next) => {
+  try {
+    const invite = await getLoginInvite(req.params.token);
     res.status(200).json({
       success: true,
       data: { invite },

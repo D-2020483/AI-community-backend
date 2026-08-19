@@ -6,6 +6,7 @@ import {
   logout,
   me,
   getInvite,
+  getLoginInviteStatus,
   postAcceptInvite,
   postChangePassword,
 } from "./auth.controller.js";
@@ -17,6 +18,7 @@ const router = Router();
 router.post("/register", register);
 router.post("/login", login);
 router.get("/invite/:token", getInvite);
+router.get("/login-invite/:token", getLoginInviteStatus);
 router.post("/accept-invite", postAcceptInvite);
 
 router.post("/logout", authenticate, logout);

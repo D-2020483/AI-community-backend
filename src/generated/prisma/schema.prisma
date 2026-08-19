@@ -36,6 +36,9 @@ model Profile {
   createdBy          String?           @map("created_by")
   invitedAt          DateTime?         @map("invited_at")
   acceptedAt         DateTime?         @map("accepted_at")
+  status             String            @default("Active")
+  district           String?
+  location           String?
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
 
@@ -97,4 +100,16 @@ model Complaint {
 
   @@index([userId])
   @@map("complaints")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  icon      String   @default("Tag")
+  color     String   @default("#4f46e5")
+  status    String   @default("Active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("categories")
 }

@@ -6,6 +6,8 @@ import adminRoutes from "./modules/admin/admin.routes.js";
 import complaintRoutes from "./modules/complaints/complaint.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import testRoutes from "./routes/testRoutes.js";
+import { authenticate } from "./middleware/auth.middleware.js";
+import { getPublicCategories } from "./modules/admin/admin.controller.js";
 
 const app = express();
 
@@ -30,6 +32,8 @@ app.get("/api/health", (req, res) => {
 app.use("/api/test", testRoutes);
 
 app.use("/api/auth", authRoutes);
+
+app.get("/api/categories", authenticate, getPublicCategories);
 
 app.use("/api/admin", adminRoutes);
 

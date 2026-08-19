@@ -133,6 +133,9 @@ exports.Prisma.ProfileScalarFieldEnum = {
   createdBy: 'createdBy',
   invitedAt: 'invitedAt',
   acceptedAt: 'acceptedAt',
+  status: 'status',
+  district: 'district',
+  location: 'location',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -180,6 +183,16 @@ exports.Prisma.ComplaintScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  icon: 'icon',
+  color: 'color',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -212,7 +225,8 @@ exports.Prisma.ModelName = {
   Profile: 'Profile',
   Authority: 'Authority',
   Officer: 'Officer',
-  Complaint: 'Complaint'
+  Complaint: 'Complaint',
+  Category: 'Category'
 };
 
 /**

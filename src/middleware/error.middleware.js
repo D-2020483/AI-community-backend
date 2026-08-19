@@ -23,8 +23,29 @@ export const errorHandler = (error, req, res, next) => {
     });
   }
 
-  if (error.message?.includes("permission")) {
+  if (error.message?.includes("permission") || error.message?.includes("deactivated")) {
     return res.status(403).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
+  if (error.message?.includes("already been used")) {
+    return res.status(410).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
+  if (error.message?.includes("not found")) {
+    return res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
+  if (error.message?.includes("already exists")) {
+    return res.status(409).json({
       success: false,
       message: error.message,
     });

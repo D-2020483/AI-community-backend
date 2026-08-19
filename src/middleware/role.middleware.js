@@ -7,7 +7,7 @@ export const requireRole = (...allowedRoles) => {
       });
     }
 
-    if (!allowedRoles.includes(req.profile.role)) {
+    if (!allowedRoles.some((role) => String(role).toUpperCase() === String(req.profile.role).toUpperCase())) {
       return res.status(403).json({
         success: false,
         message: "You do not have permission to access this resource",

@@ -27,8 +27,9 @@ export const registerSchema = z
 
 export const loginSchema = z.object({
   email: z.string().email("Please provide a valid email address"),
-
   password: z.string().min(1, "Password is required"),
+  expectedRole: z.enum(["citizen", "authority", "officer", "admin"]).optional(),
+  inviteToken: z.string().optional(),
 });
 
 export const acceptInviteSchema = z
