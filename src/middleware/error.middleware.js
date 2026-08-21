@@ -1,6 +1,13 @@
 export const errorHandler = (error, req, res, next) => {
   console.error(error);
 
+  if (error.statusCode) {
+    return res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
   if (error.name === "ZodError") {
     return res.status(400).json({
       success: false,

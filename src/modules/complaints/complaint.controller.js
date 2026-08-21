@@ -1,4 +1,20 @@
 import prisma from "../../config/database.js";
+import {
+  applyComplaintUpdate,
+  attachCitizens,
+  authorityNamesMatch,
+  buildWorkspaceNotifications,
+  defaultTimeline,
+  ensureTimeline,
+  findComplaint,
+  formatComplaintForStaff,
+  formatLabel,
+  getLoggedInAuthorityId,
+  getLoggedInAuthorityName,
+  isAssignedToOfficer,
+  listAuthorityReports,
+  statusToDb,
+} from "./complaint.helpers.js";
 
 function parseConfidence(value) {
   if (value === null || value === undefined || value === "") return null;
@@ -6,6 +22,8 @@ function parseConfidence(value) {
   if (Number.isNaN(numeric)) return null;
   return numeric > 1 ? numeric / 100 : numeric;
 }
+
+export { authorityNamesMatch };
 
 export const createAndTrackReport = async (req, res, next) => {
   try {
@@ -33,6 +51,10 @@ export const createAndTrackReport = async (req, res, next) => {
     const publicReportId =
       reportId || `RPT-${Math.floor(100000 + Math.random() * 900000)}`;
 
+    const existing = await prisma.complaint.findUnique({
+      where: { reportId: publicReportId },
+    });
+
     const payload = {
       description: description.trim(),
       location: location.trim(),
@@ -45,6 +67,14 @@ export const createAndTrackReport = async (req, res, next) => {
       reason: reason || null,
       status: (status || "ASSIGNED").toUpperCase(),
       userId: req.profile?.id || null,
+      assignedOfficer: existing?.assignedOfficer || null,
+      timeline:
+        existing?.timeline ||
+        defaultTimeline({
+          createdAt: existing?.createdAt || new Date(),
+          assignedAuthority: authority || "Manual Review Required",
+          citizenName: req.profile?.fullName || "",
+        }),
     };
 
     const newReport = await prisma.complaint.upsert({
@@ -69,14 +99,7 @@ export const createAndTrackReport = async (req, res, next) => {
 export const getTrackedReport = async (req, res, next) => {
   try {
     const { reportId } = req.params;
-
-    const report =
-      (await prisma.complaint.findUnique({
-        where: { reportId },
-      })) ||
-      (await prisma.complaint.findUnique({
-        where: { id: reportId },
-      }));
+    const report = await findComplaint(reportId);
 
     if (!report) {
       return res.status(404).json({
@@ -86,27 +109,41 @@ export const getTrackedReport = async (req, res, next) => {
     }
 
     const isOwner = report.userId && report.userId === req.profile?.id;
-    const isStaff = ["ADMIN", "AUTHORITY", "OFFICER"].includes(
-      req.profile?.role,
-    );
+    const isAdmin = req.profile?.role === "ADMIN";
+    const isAssignedStaff =
+      ["AUTHORITY", "OFFICER"].includes(req.profile?.role) &&
+      authorityNamesMatch(
+        report.assignedAuthority,
+        getLoggedInAuthorityName(req.profile),
+      );
+    const isAssignedOfficer =
+      req.profile?.role === "OFFICER" && isAssignedToOfficer(report, req.profile);
 
-    if (!isOwner && !isStaff) {
+    if (
+      !isOwner &&
+      !isAdmin &&
+      !(req.profile?.role === "AUTHORITY" && isAssignedStaff) &&
+      !isAssignedOfficer
+    ) {
       return res.status(404).json({
         success: false,
         message: "Report not found.",
       });
     }
 
+    const citizen = report.userId
+      ? await prisma.profile.findUnique({ where: { id: report.userId } })
+      : null;
+
     return res.status(200).json({
       success: true,
-      data: report,
+      data: formatComplaintForStaff(report, citizen),
     });
   } catch (error) {
     next(error);
   }
 };
 
-//find all reports submitted by the logged-in citizen user
 export const getUserReports = async (req, res, next) => {
   try {
     const userId = req.profile?.id;
@@ -123,27 +160,6 @@ export const getUserReports = async (req, res, next) => {
       orderBy: { createdAt: "desc" },
     });
 
-    const formatLabel = (value, fallback) => {
-      if (!value) return fallback;
-      const key = String(value).toUpperCase().replace(/[\s-]+/g, "_");
-      const statusMap = {
-        SUBMITTED: "Pending",
-        PENDING: "Pending",
-        ASSIGNED: "Assigned",
-        IN_PROGRESS: "In Progress",
-        RESOLVED: "Resolved",
-        REJECTED: "Rejected",
-      };
-      const priorityMap = {
-        HIGH: "High",
-        MEDIUM: "Medium",
-        LOW: "Low",
-      };
-      if (statusMap[key]) return statusMap[key];
-      if (priorityMap[key]) return priorityMap[key];
-      return value;
-    };
-
     const formattedReports = reports.map((r) => ({
       id: r.reportId || r.id,
       reportId: r.reportId || r.id,
@@ -156,13 +172,22 @@ export const getUserReports = async (req, res, next) => {
       assignedAuthority: r.assignedAuthority,
       detectedIssue: r.detectedIssue,
       priority: formatLabel(r.priority, "Medium"),
-      status: formatLabel(r.status, "Assigned"),
+      status:
+        formatLabel(r.status, "Assigned") === "Accepted"
+          ? "Assigned"
+          : formatLabel(r.status, "Assigned"),
       date: new Date(r.createdAt).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric",
       }),
       createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+      assignedOfficer: r.assignedOfficer || "",
+      timeline: ensureTimeline(r, {
+        citizenName: req.profile?.fullName || "",
+        authorityName: r.assignedAuthority || "",
+      }),
       confidence:
         r.confidence !== null && r.confidence !== undefined
           ? `${Math.round(r.confidence * 100)}%`
@@ -172,6 +197,145 @@ export const getUserReports = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       data: formattedReports,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAssignedReports = async (req, res, next) => {
+  try {
+    const authorityName = getLoggedInAuthorityName(req.profile);
+
+    if (!authorityName) {
+      return res.status(400).json({
+        success: false,
+        message: "No authority is linked to this account.",
+      });
+    }
+
+    const assigned = await listAuthorityReports(req.profile);
+
+    return res.status(200).json({
+      success: true,
+      data: await attachCitizens(assigned),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAssignedReportStatus = async (req, res, next) => {
+  try {
+    const { reportId } = req.params;
+    const authorityName = getLoggedInAuthorityName(req.profile);
+    const nextStatus = statusToDb(req.body?.status);
+    const nextOfficer =
+      req.body?.assignedOfficer === undefined
+        ? undefined
+        : String(req.body.assignedOfficer || "").trim();
+    const note = req.body?.note;
+
+    if (!authorityName) {
+      return res.status(400).json({
+        success: false,
+        message: "No authority is linked to this account.",
+      });
+    }
+
+    const existing = await findComplaint(reportId);
+
+    if (
+      !existing ||
+      !authorityNamesMatch(existing.assignedAuthority, authorityName)
+    ) {
+      return res.status(404).json({
+        success: false,
+        message: "Report not found.",
+      });
+    }
+
+    if (
+      req.profile?.role === "OFFICER" &&
+      !isAssignedToOfficer(existing, req.profile)
+    ) {
+      return res.status(404).json({
+        success: false,
+        message: "Report not found.",
+      });
+    }
+
+    const updated = await applyComplaintUpdate({
+      existing,
+      profile: req.profile,
+      nextStatus,
+      nextOfficer: req.profile?.role === "OFFICER" ? undefined : nextOfficer,
+      note,
+    });
+
+    const citizen = updated.userId
+      ? await prisma.profile.findUnique({ where: { id: updated.userId } })
+      : null;
+
+    return res.status(200).json({
+      success: true,
+      message: "Report updated.",
+      data: formatComplaintForStaff(updated, citizen),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAuthorityOfficers = async (req, res, next) => {
+  try {
+    const authorityId = getLoggedInAuthorityId(req.profile);
+    if (!authorityId) {
+      return res.status(400).json({
+        success: false,
+        message: "No authority is linked to this account.",
+      });
+    }
+
+    const officers = await prisma.officer.findMany({
+      where: { authorityId },
+      include: { profile: true, authority: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: officers.map((officer) => ({
+        id: officer.id,
+        name: officer.profile?.fullName || "Officer",
+        email: officer.profile?.email || "",
+        phone: officer.profile?.phone || "",
+        position: officer.position || "Field Officer",
+        department: officer.department || officer.authority?.name || "",
+        status: officer.status || "Active",
+        authority: officer.authority?.name || "",
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getWorkspaceNotifications = async (req, res, next) => {
+  try {
+    const authorityName = getLoggedInAuthorityName(req.profile);
+    if (!authorityName) {
+      return res.status(400).json({
+        success: false,
+        message: "No authority is linked to this account.",
+      });
+    }
+
+    const assigned = await listAuthorityReports(req.profile);
+
+    return res.status(200).json({
+      success: true,
+      data: { notifications: buildWorkspaceNotifications(assigned) },
     });
   } catch (error) {
     next(error);

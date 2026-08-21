@@ -304,3 +304,33 @@ export const changePassword = async (userId, { currentPassword, newPassword }) =
 
   return { success: true };
 };
+
+export const updateCurrentUser = async (userId, data) => {
+  const profile = await prisma.profile.findUnique({
+    where: { id: userId },
+  });
+
+  if (!profile) {
+    throw new Error("Account not found");
+  }
+
+  if (data.fullName && data.fullName !== profile.fullName) {
+    const supabaseAdmin = getSupabaseAdmin();
+    await supabaseAdmin.auth.admin.updateUserById(profile.id, {
+      user_metadata: { fullName: data.fullName },
+    });
+  }
+
+  return prisma.profile.update({
+    where: { id: profile.id },
+    data: {
+      fullName: data.fullName || profile.fullName,
+      phone: data.phone !== undefined ? data.phone || null : profile.phone,
+      district:
+        data.district !== undefined ? data.district || null : profile.district,
+      location:
+        data.location !== undefined ? data.location || null : profile.location,
+    },
+    include: profileInclude,
+  });
+};

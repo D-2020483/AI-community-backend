@@ -5,6 +5,7 @@ import {
   getLoginInvite,
   acceptInvite,
   changePassword,
+  updateCurrentUser,
 } from "./auth.service.js";
 
 import {
@@ -12,6 +13,7 @@ import {
   loginSchema,
   acceptInviteSchema,
   changePasswordSchema,
+  updateMeSchema,
 } from "./auth.validation.js";
 
 export const register = async (req, res, next) => {
@@ -119,6 +121,21 @@ export const postChangePassword = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Password updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const patchMe = async (req, res, next) => {
+  try {
+    const validatedData = updateMeSchema.parse(req.body);
+    const user = await updateCurrentUser(req.profile.id, validatedData);
+
+    res.status(200).json({
+      success: true,
+      message: "Settings saved successfully",
+      data: { user },
     });
   } catch (error) {
     next(error);

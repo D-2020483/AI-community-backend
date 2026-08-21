@@ -53,3 +53,15 @@ export const changePasswordSchema = z
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
+export const updateMeSchema = z.object({
+  fullName: z.string().min(2, "Full name must contain at least 2 characters").max(100),
+  phone: z
+    .string()
+    .min(7, "Phone number is invalid")
+    .max(20)
+    .optional()
+    .or(z.literal("")),
+  district: z.string().max(150).optional().or(z.literal("")),
+  location: z.string().max(200).optional().or(z.literal("")),
+});

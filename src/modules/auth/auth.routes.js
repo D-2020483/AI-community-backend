@@ -9,6 +9,7 @@ import {
   getLoginInviteStatus,
   postAcceptInvite,
   postChangePassword,
+  patchMe,
 } from "./auth.controller.js";
 
 import { authenticate } from "../../middleware/auth.middleware.js";
@@ -23,6 +24,7 @@ router.post("/accept-invite", postAcceptInvite);
 
 router.post("/logout", authenticate, logout);
 router.get("/me", authenticate, me);
+router.patch("/me", authenticate, patchMe);
 router.post("/change-password", authenticate, postChangePassword);
 
 export default router;

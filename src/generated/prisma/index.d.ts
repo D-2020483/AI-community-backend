@@ -4882,6 +4882,7 @@ export namespace Prisma {
     confidence: number | null
     reason: string | null
     status: string | null
+    assignedOfficer: string | null
     userId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4900,6 +4901,7 @@ export namespace Prisma {
     confidence: number | null
     reason: string | null
     status: string | null
+    assignedOfficer: string | null
     userId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4918,6 +4920,8 @@ export namespace Prisma {
     confidence: number
     reason: number
     status: number
+    assignedOfficer: number
+    timeline: number
     userId: number
     createdAt: number
     updatedAt: number
@@ -4946,6 +4950,7 @@ export namespace Prisma {
     confidence?: true
     reason?: true
     status?: true
+    assignedOfficer?: true
     userId?: true
     createdAt?: true
     updatedAt?: true
@@ -4964,6 +4969,7 @@ export namespace Prisma {
     confidence?: true
     reason?: true
     status?: true
+    assignedOfficer?: true
     userId?: true
     createdAt?: true
     updatedAt?: true
@@ -4982,6 +4988,8 @@ export namespace Prisma {
     confidence?: true
     reason?: true
     status?: true
+    assignedOfficer?: true
+    timeline?: true
     userId?: true
     createdAt?: true
     updatedAt?: true
@@ -5087,6 +5095,8 @@ export namespace Prisma {
     confidence: number | null
     reason: string | null
     status: string
+    assignedOfficer: string | null
+    timeline: JsonValue | null
     userId: string | null
     createdAt: Date
     updatedAt: Date
@@ -5124,6 +5134,8 @@ export namespace Prisma {
     confidence?: boolean
     reason?: boolean
     status?: boolean
+    assignedOfficer?: boolean
+    timeline?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5142,6 +5154,8 @@ export namespace Prisma {
     confidence?: boolean
     reason?: boolean
     status?: boolean
+    assignedOfficer?: boolean
+    timeline?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5160,6 +5174,8 @@ export namespace Prisma {
     confidence?: boolean
     reason?: boolean
     status?: boolean
+    assignedOfficer?: boolean
+    timeline?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5178,12 +5194,14 @@ export namespace Prisma {
     confidence?: boolean
     reason?: boolean
     status?: boolean
+    assignedOfficer?: boolean
+    timeline?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ComplaintOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reportId" | "description" | "location" | "imageUrl" | "category" | "assignedAuthority" | "detectedIssue" | "priority" | "confidence" | "reason" | "status" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["complaint"]>
+  export type ComplaintOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reportId" | "description" | "location" | "imageUrl" | "category" | "assignedAuthority" | "detectedIssue" | "priority" | "confidence" | "reason" | "status" | "assignedOfficer" | "timeline" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["complaint"]>
 
   export type $ComplaintPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Complaint"
@@ -5201,6 +5219,8 @@ export namespace Prisma {
       confidence: number | null
       reason: string | null
       status: string
+      assignedOfficer: string | null
+      timeline: Prisma.JsonValue | null
       userId: string | null
       createdAt: Date
       updatedAt: Date
@@ -5639,6 +5659,8 @@ export namespace Prisma {
     readonly confidence: FieldRef<"Complaint", 'Float'>
     readonly reason: FieldRef<"Complaint", 'String'>
     readonly status: FieldRef<"Complaint", 'String'>
+    readonly assignedOfficer: FieldRef<"Complaint", 'String'>
+    readonly timeline: FieldRef<"Complaint", 'Json'>
     readonly userId: FieldRef<"Complaint", 'String'>
     readonly createdAt: FieldRef<"Complaint", 'DateTime'>
     readonly updatedAt: FieldRef<"Complaint", 'DateTime'>
@@ -6028,6 +6050,7 @@ export namespace Prisma {
     name: string | null
     icon: string | null
     color: string | null
+    code: string | null
     status: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6038,6 +6061,7 @@ export namespace Prisma {
     name: string | null
     icon: string | null
     color: string | null
+    code: string | null
     status: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6048,6 +6072,7 @@ export namespace Prisma {
     name: number
     icon: number
     color: number
+    code: number
     status: number
     createdAt: number
     updatedAt: number
@@ -6060,6 +6085,7 @@ export namespace Prisma {
     name?: true
     icon?: true
     color?: true
+    code?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -6070,6 +6096,7 @@ export namespace Prisma {
     name?: true
     icon?: true
     color?: true
+    code?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -6080,6 +6107,7 @@ export namespace Prisma {
     name?: true
     icon?: true
     color?: true
+    code?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -6163,6 +6191,7 @@ export namespace Prisma {
     name: string
     icon: string
     color: string
+    code: string | null
     status: string
     createdAt: Date
     updatedAt: Date
@@ -6190,6 +6219,7 @@ export namespace Prisma {
     name?: boolean
     icon?: boolean
     color?: boolean
+    code?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6200,6 +6230,7 @@ export namespace Prisma {
     name?: boolean
     icon?: boolean
     color?: boolean
+    code?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6210,6 +6241,7 @@ export namespace Prisma {
     name?: boolean
     icon?: boolean
     color?: boolean
+    code?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6220,12 +6252,13 @@ export namespace Prisma {
     name?: boolean
     icon?: boolean
     color?: boolean
+    code?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type CategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "icon" | "color" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["category"]>
+  export type CategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "icon" | "color" | "code" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["category"]>
 
   export type $CategoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Category"
@@ -6235,6 +6268,7 @@ export namespace Prisma {
       name: string
       icon: string
       color: string
+      code: string | null
       status: string
       createdAt: Date
       updatedAt: Date
@@ -6665,6 +6699,7 @@ export namespace Prisma {
     readonly name: FieldRef<"Category", 'String'>
     readonly icon: FieldRef<"Category", 'String'>
     readonly color: FieldRef<"Category", 'String'>
+    readonly code: FieldRef<"Category", 'String'>
     readonly status: FieldRef<"Category", 'String'>
     readonly createdAt: FieldRef<"Category", 'DateTime'>
     readonly updatedAt: FieldRef<"Category", 'DateTime'>
@@ -7120,6 +7155,8 @@ export namespace Prisma {
     confidence: 'confidence',
     reason: 'reason',
     status: 'status',
+    assignedOfficer: 'assignedOfficer',
+    timeline: 'timeline',
     userId: 'userId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -7133,6 +7170,7 @@ export namespace Prisma {
     name: 'name',
     icon: 'icon',
     color: 'color',
+    code: 'code',
     status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -7149,6 +7187,14 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
@@ -7163,6 +7209,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -7244,6 +7299,20 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -7559,6 +7628,8 @@ export namespace Prisma {
     confidence?: FloatNullableFilter<"Complaint"> | number | null
     reason?: StringNullableFilter<"Complaint"> | string | null
     status?: StringFilter<"Complaint"> | string
+    assignedOfficer?: StringNullableFilter<"Complaint"> | string | null
+    timeline?: JsonNullableFilter<"Complaint">
     userId?: StringNullableFilter<"Complaint"> | string | null
     createdAt?: DateTimeFilter<"Complaint"> | Date | string
     updatedAt?: DateTimeFilter<"Complaint"> | Date | string
@@ -7577,6 +7648,8 @@ export namespace Prisma {
     confidence?: SortOrderInput | SortOrder
     reason?: SortOrderInput | SortOrder
     status?: SortOrder
+    assignedOfficer?: SortOrderInput | SortOrder
+    timeline?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7598,6 +7671,8 @@ export namespace Prisma {
     confidence?: FloatNullableFilter<"Complaint"> | number | null
     reason?: StringNullableFilter<"Complaint"> | string | null
     status?: StringFilter<"Complaint"> | string
+    assignedOfficer?: StringNullableFilter<"Complaint"> | string | null
+    timeline?: JsonNullableFilter<"Complaint">
     userId?: StringNullableFilter<"Complaint"> | string | null
     createdAt?: DateTimeFilter<"Complaint"> | Date | string
     updatedAt?: DateTimeFilter<"Complaint"> | Date | string
@@ -7616,6 +7691,8 @@ export namespace Prisma {
     confidence?: SortOrderInput | SortOrder
     reason?: SortOrderInput | SortOrder
     status?: SortOrder
+    assignedOfficer?: SortOrderInput | SortOrder
+    timeline?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7642,6 +7719,8 @@ export namespace Prisma {
     confidence?: FloatNullableWithAggregatesFilter<"Complaint"> | number | null
     reason?: StringNullableWithAggregatesFilter<"Complaint"> | string | null
     status?: StringWithAggregatesFilter<"Complaint"> | string
+    assignedOfficer?: StringNullableWithAggregatesFilter<"Complaint"> | string | null
+    timeline?: JsonNullableWithAggregatesFilter<"Complaint">
     userId?: StringNullableWithAggregatesFilter<"Complaint"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Complaint"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Complaint"> | Date | string
@@ -7655,6 +7734,7 @@ export namespace Prisma {
     name?: StringFilter<"Category"> | string
     icon?: StringFilter<"Category"> | string
     color?: StringFilter<"Category"> | string
+    code?: StringNullableFilter<"Category"> | string | null
     status?: StringFilter<"Category"> | string
     createdAt?: DateTimeFilter<"Category"> | Date | string
     updatedAt?: DateTimeFilter<"Category"> | Date | string
@@ -7665,6 +7745,7 @@ export namespace Prisma {
     name?: SortOrder
     icon?: SortOrder
     color?: SortOrder
+    code?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7678,6 +7759,7 @@ export namespace Prisma {
     NOT?: CategoryWhereInput | CategoryWhereInput[]
     icon?: StringFilter<"Category"> | string
     color?: StringFilter<"Category"> | string
+    code?: StringNullableFilter<"Category"> | string | null
     status?: StringFilter<"Category"> | string
     createdAt?: DateTimeFilter<"Category"> | Date | string
     updatedAt?: DateTimeFilter<"Category"> | Date | string
@@ -7688,6 +7770,7 @@ export namespace Prisma {
     name?: SortOrder
     icon?: SortOrder
     color?: SortOrder
+    code?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7704,6 +7787,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Category"> | string
     icon?: StringWithAggregatesFilter<"Category"> | string
     color?: StringWithAggregatesFilter<"Category"> | string
+    code?: StringNullableWithAggregatesFilter<"Category"> | string | null
     status?: StringWithAggregatesFilter<"Category"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Category"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Category"> | Date | string
@@ -8046,6 +8130,8 @@ export namespace Prisma {
     confidence?: number | null
     reason?: string | null
     status?: string
+    assignedOfficer?: string | null
+    timeline?: NullableJsonNullValueInput | InputJsonValue
     userId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8064,6 +8150,8 @@ export namespace Prisma {
     confidence?: number | null
     reason?: string | null
     status?: string
+    assignedOfficer?: string | null
+    timeline?: NullableJsonNullValueInput | InputJsonValue
     userId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8082,6 +8170,8 @@ export namespace Prisma {
     confidence?: NullableFloatFieldUpdateOperationsInput | number | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    assignedOfficer?: NullableStringFieldUpdateOperationsInput | string | null
+    timeline?: NullableJsonNullValueInput | InputJsonValue
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8100,6 +8190,8 @@ export namespace Prisma {
     confidence?: NullableFloatFieldUpdateOperationsInput | number | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    assignedOfficer?: NullableStringFieldUpdateOperationsInput | string | null
+    timeline?: NullableJsonNullValueInput | InputJsonValue
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8118,6 +8210,8 @@ export namespace Prisma {
     confidence?: number | null
     reason?: string | null
     status?: string
+    assignedOfficer?: string | null
+    timeline?: NullableJsonNullValueInput | InputJsonValue
     userId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8136,6 +8230,8 @@ export namespace Prisma {
     confidence?: NullableFloatFieldUpdateOperationsInput | number | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    assignedOfficer?: NullableStringFieldUpdateOperationsInput | string | null
+    timeline?: NullableJsonNullValueInput | InputJsonValue
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8154,6 +8250,8 @@ export namespace Prisma {
     confidence?: NullableFloatFieldUpdateOperationsInput | number | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    assignedOfficer?: NullableStringFieldUpdateOperationsInput | string | null
+    timeline?: NullableJsonNullValueInput | InputJsonValue
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8164,6 +8262,7 @@ export namespace Prisma {
     name: string
     icon?: string
     color?: string
+    code?: string | null
     status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8174,6 +8273,7 @@ export namespace Prisma {
     name: string
     icon?: string
     color?: string
+    code?: string | null
     status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8184,6 +8284,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     icon?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8194,6 +8295,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     icon?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8204,6 +8306,7 @@ export namespace Prisma {
     name: string
     icon?: string
     color?: string
+    code?: string | null
     status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8214,6 +8317,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     icon?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8224,6 +8328,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     icon?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8572,6 +8677,29 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type ComplaintCountOrderByAggregateInput = {
     id?: SortOrder
@@ -8586,6 +8714,8 @@ export namespace Prisma {
     confidence?: SortOrder
     reason?: SortOrder
     status?: SortOrder
+    assignedOfficer?: SortOrder
+    timeline?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8608,6 +8738,7 @@ export namespace Prisma {
     confidence?: SortOrder
     reason?: SortOrder
     status?: SortOrder
+    assignedOfficer?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8626,6 +8757,7 @@ export namespace Prisma {
     confidence?: SortOrder
     reason?: SortOrder
     status?: SortOrder
+    assignedOfficer?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8650,12 +8782,39 @@ export namespace Prisma {
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
 
   export type CategoryCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     icon?: SortOrder
     color?: SortOrder
+    code?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8666,6 +8825,7 @@ export namespace Prisma {
     name?: SortOrder
     icon?: SortOrder
     color?: SortOrder
+    code?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -8676,6 +8836,7 @@ export namespace Prisma {
     name?: SortOrder
     icon?: SortOrder
     color?: SortOrder
+    code?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -9071,6 +9232,29 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type AuthorityCreateWithoutProfileInput = {

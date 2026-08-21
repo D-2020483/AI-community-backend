@@ -216,7 +216,7 @@ export const listOfficers = async () => {
 export const resetOfficerPassword = async (officerId) => {
   const officer = await prisma.officer.findUnique({
     where: { id: officerId },
-    include: { profile: true },
+    include: { profile: true, authority: true },
   });
 
   if (!officer) {
@@ -244,7 +244,27 @@ export const resetOfficerPassword = async (officerId) => {
     },
   });
 
-  return { tempPassword, email: officer.profile.email };
+  const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:5173").replace(
+    /\/$/,
+    "",
+  );
+  const loginUrl = `${frontendUrl}/login?role=officer`;
+  const emailStatus = await sendInvitationEmail({
+    to: officer.profile.email,
+    fullName: officer.profile.fullName,
+    tempPassword,
+    inviteUrl: loginUrl,
+    role: "OFFICER",
+    authorityName: officer.authority?.name,
+  });
+
+  return {
+    tempPassword,
+    email: officer.profile.email,
+    loginUrl,
+    inviteUrl: loginUrl,
+    emailStatus,
+  };
 };
 
 const authorityInclude = {
