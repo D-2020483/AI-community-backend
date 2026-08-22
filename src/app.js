@@ -12,9 +12,37 @@ import { getPublicCategories } from "./modules/admin/admin.controller.js";
 
 const app = express();
 
+const DEFAULT_ORIGINS = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://civic-link-frontkend.vercel.app",
+];
+
+function allowedOrigins() {
+  const fromEnv = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((value) => value.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+
+  return [...new Set([...DEFAULT_ORIGINS, ...fromEnv])];
+}
+
+function isAllowedOrigin(origin) {
+  if (allowedOrigins().includes(origin)) return true;
+  return /^https:\/\/civic-link-frontkend(-[a-z0-9-]+)?\.vercel\.app$/.test(
+    origin
+  );
+}
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "https://civic-link-frontkend.vercel.app",
+    origin(origin, callback) {
+      if (!origin || isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
   })
 );
