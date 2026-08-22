@@ -69,7 +69,7 @@ async function createInvitedUser({
       include: profileInclude,
     });
 
-    const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:5173").replace(
+    const frontendUrl = (process.env.FRONTEND_URL || "https://civic-link-frontkend.vercel.app").replace(
       /\/$/,
       "",
     );
@@ -244,7 +244,7 @@ export const resetOfficerPassword = async (officerId) => {
     },
   });
 
-  const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:5173").replace(
+  const frontendUrl = (process.env.FRONTEND_URL || "https://civic-link-frontkend.vercel.app").replace(
     /\/$/,
     "",
   );
