@@ -71,10 +71,17 @@ export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUr
   }
 
   try {
+    // Render and many PaaS hosts block or stall SMTP on IPv6 / port 587.
+    // Force IPv4 and fail fast so the admin UI can show credentials.
     const transporter = nodemailer.createTransport({
       host,
       port,
       secure: Number(port) === 465,
+      requireTLS: Number(port) === 587,
+      connectionTimeout: 12_000,
+      greetingTimeout: 12_000,
+      socketTimeout: 20_000,
+      family: 4,
       auth: {
         user,
         pass,
@@ -104,9 +111,15 @@ export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUr
     };
   } catch (error) {
     console.error('Email send failed:', error);
+    const timedOut = /timeout|etimedout|econnreset|enotfound/i.test(
+      `${error.code || ''} ${error.message || ''}`,
+    );
+    const hint = timedOut
+      ? ' Render often blocks outbound Gmail SMTP (ports 25/587/465). Set FRONTEND_URL to your Vercel URL, then send mail with an HTTPS provider (Resend/SendGrid) or Gmail on port 465.'
+      : '';
     return {
       sent: false,
-      message: `Email send failed: ${error.message}`,
+      message: `Email send failed: ${error.message}.${hint}`,
       fallbackHtml: buildEmailHtml({
         fullName,
         email: to,
