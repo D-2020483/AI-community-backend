@@ -1,6 +1,7 @@
 import {
   registerCitizen,
   loginUser,
+  refreshAuthSession,
   getInviteByToken,
   getLoginInvite,
   acceptInvite,
@@ -11,6 +12,7 @@ import {
 import {
   registerSchema,
   loginSchema,
+  refreshSchema,
   acceptInviteSchema,
   changePasswordSchema,
   updateMeSchema,
@@ -42,6 +44,21 @@ export const login = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Login successful",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refresh = async (req, res, next) => {
+  try {
+    const { refresh_token } = refreshSchema.parse(req.body);
+    const result = await refreshAuthSession(refresh_token);
+
+    res.status(200).json({
+      success: true,
+      message: "Session refreshed",
       data: result,
     });
   } catch (error) {

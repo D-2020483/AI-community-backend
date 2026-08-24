@@ -16,6 +16,7 @@ const DEFAULT_ORIGINS = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "https://civic-link-frontkend.vercel.app",
+  "https://civic-link-frontend.vercel.app",
 ];
 
 function allowedOrigins() {
@@ -29,23 +30,25 @@ function allowedOrigins() {
 
 function isAllowedOrigin(origin) {
   if (allowedOrigins().includes(origin)) return true;
-  return /^https:\/\/civic-link-frontkend(-[a-z0-9-]+)?\.vercel\.app$/.test(
+  return /^https:\/\/civic-link-frontk?end(-[a-z0-9-]+)?\.vercel\.app$/.test(
     origin
   );
 }
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || isAllowedOrigin(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(null, false);
-    },
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "15mb" }));
 

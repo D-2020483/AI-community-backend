@@ -3,6 +3,17 @@ import { getSupabaseAdmin } from "../../config/supabaseAdmin.js";
 import prisma from "../../config/database.js";
 import { INVITE_EXPIRY_DAYS, profileInclude } from "../admin/admin.service.js";
 
+function toPublicSession(session) {
+  if (!session) return session;
+  return {
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+    expires_at: session.expires_at,
+    expires_in: session.expires_in,
+    token_type: session.token_type,
+  };
+}
+
 function buildLoginPayload(profile, session) {
   const requiresPasswordChange =
     profile.role !== "CITIZEN" &&
@@ -116,7 +127,7 @@ export const loginUser = async ({ email, password, expectedRole, inviteToken }) 
 
   return buildLoginPayload(
     { ...profile, invitationToken: null, invitationStatus: "ACCEPTED" },
-    authData.session,
+    toPublicSession(authData.session),
   );
 };
 
@@ -204,8 +215,20 @@ export const registerCitizen = async ({ fullName, email, phone, password }) => {
 
   return {
     user: profile,
-    session: authData.session,
+    session: toPublicSession(authData.session),
   };
+};
+
+export const refreshAuthSession = async (refreshToken) => {
+  const { data, error } = await supabase.auth.refreshSession({
+    refresh_token: refreshToken,
+  });
+
+  if (error || !data.session) {
+    throw new Error("Invalid or expired access token");
+  }
+
+  return { session: toPublicSession(data.session) };
 };
 
 export const getInviteByToken = async (token) => {

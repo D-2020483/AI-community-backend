@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   register,
   login,
+  refresh,
   logout,
   me,
   getInvite,
@@ -18,6 +19,7 @@ const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/refresh", refresh);
 router.get("/invite/:token", getInvite);
 router.get("/login-invite/:token", getLoginInviteStatus);
 router.post("/accept-invite", postAcceptInvite);

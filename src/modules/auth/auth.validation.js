@@ -25,6 +25,10 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
+export const refreshSchema = z.object({
+  refresh_token: z.string().min(1, "Refresh token is required"),
+});
+
 export const loginSchema = z.object({
   email: z.string().email("Please provide a valid email address"),
   password: z.string().min(1, "Password is required"),
