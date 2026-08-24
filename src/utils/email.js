@@ -74,55 +74,95 @@ function buildEmailHtml({ fullName, email, tempPassword, inviteUrl, role, author
   `;
 }
 
-export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUrl, role, authorityName }) {
+function invitationContent({ to, fullName, tempPassword, inviteUrl, role, authorityName }) {
+  return {
+    subject: 'Your Civic Link account is ready',
+    html: buildEmailHtml({
+      fullName,
+      email: to,
+      tempPassword,
+      inviteUrl,
+      role,
+      authorityName,
+    }),
+    text: `Hello ${fullName},\n\nYour Civic Link ${role === "AUTHORITY" ? "authority" : "officer"} account is ready.\nLogin page: ${inviteUrl}\nEmail: ${to}\nPassword: ${tempPassword}\n`,
+  };
+}
+
+function mailFromAddress() {
+  const raw = process.env.EMAIL_FROM || 'Civic Link <onboarding@resend.dev>';
+  return raw.replace(/^["']|["']$/g, '');
+}
+
+async function sendWithResend({ to, from, subject, html, text }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from, to: [to], subject, html, text }),
+    signal: AbortSignal.timeout(20_000),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = payload.message || payload.error || response.statusText;
+    throw new Error(`Resend API ${response.status}: ${detail}`);
+  }
+
+  return payload.id;
+}
+
+async function sendWithSmtp({ to, from, subject, html, text }) {
   const host = process.env.EMAIL_HOST;
   const port = Number(process.env.EMAIL_PORT || 587);
   const user = process.env.EMAIL_USER;
   const pass = process.env.EMAIL_PASS;
-  const from = process.env.EMAIL_FROM || 'Civic Link <no-reply@localhost>';
 
-  if (!host || !user || !pass) {
+  const transporter = nodemailer.createTransport({
+    ...(await smtpConnectOptions(host, port)),
+    auth: { user, pass },
+  });
+
+  const info = await transporter.sendMail({ from, to, subject, html, text });
+  return info.messageId;
+}
+
+export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUrl, role, authorityName }) {
+  const resendKey = process.env.RESEND_API_KEY;
+  const host = process.env.EMAIL_HOST;
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+  const from = mailFromAddress();
+  const content = invitationContent({
+    to,
+    fullName,
+    tempPassword,
+    inviteUrl,
+    role,
+    authorityName,
+  });
+  const fallbackHtml = content.html;
+
+  if (!resendKey && (!host || !user || !pass)) {
     return {
       sent: false,
-      message: 'SMTP is not configured. Email was not sent. Add EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS, EMAIL_FROM to the backend .env file.',
-      fallbackHtml: buildEmailHtml({
-        fullName,
-        email: to,
-        tempPassword,
-        inviteUrl,
-        role,
-        authorityName,
-      }),
+      message:
+        'Email is not configured. Add RESEND_API_KEY (and EMAIL_FROM) so invitation mail can be sent.',
+      fallbackHtml,
     };
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      ...(await smtpConnectOptions(host, port)),
-      auth: {
-        user,
-        pass,
-      },
-    });
-
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject: 'Your Civic Link account is ready',
-      html: buildEmailHtml({
-        fullName,
-        email: to,
-        tempPassword,
-        inviteUrl,
-        role,
-        authorityName,
-      }),
-      text: `Hello ${fullName},\n\nYour Civic Link ${role === "AUTHORITY" ? "authority" : "officer"} account is ready.\nLogin page: ${inviteUrl}\nEmail: ${to}\nPassword: ${tempPassword}\n`,
-    });
+    const messageId = resendKey
+      ? await sendWithResend({ to, from, ...content })
+      : await sendWithSmtp({ to, from, ...content });
 
     return {
       sent: true,
-      messageId: info.messageId,
+      messageId,
       message: `Invitation email sent to ${to}`,
       previewUrl: null,
     };
@@ -131,22 +171,17 @@ export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUr
     const detail = `${error.code || ''} ${error.message || ''}`;
     const ipv6Unreachable = /enetunreach|:::/i.test(detail);
     const timedOut = /timeout|etimedout|econnreset|enotfound/i.test(detail);
-    const hint = ipv6Unreachable
-      ? ' The server tried Gmail over IPv6, which is not reachable on this network. Restart the backend after this IPv4 fix, then retry.'
-      : timedOut
-        ? ' Render often blocks outbound Gmail SMTP (ports 25/587/465). Use port 465 or an HTTPS mail API (Resend/SendGrid).'
-        : '';
+    const hint = resendKey
+      ? ' Check RESEND_API_KEY and that EMAIL_FROM uses a verified Resend domain (or onboarding@resend.dev for tests).'
+      : ipv6Unreachable
+        ? ' The server tried Gmail over IPv6, which is not reachable on this network.'
+        : timedOut
+          ? ' Render blocks outbound Gmail SMTP. Set RESEND_API_KEY on the Render service and redeploy.'
+          : '';
     return {
       sent: false,
       message: `Email send failed: ${error.message}.${hint}`,
-      fallbackHtml: buildEmailHtml({
-        fullName,
-        email: to,
-        tempPassword,
-        inviteUrl,
-        role,
-        authorityName,
-      }),
+      fallbackHtml,
     };
   }
 }
