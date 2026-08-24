@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-process.env.RESEND_API_KEY = '';
 process.env.EMAIL_HOST = '';
 process.env.EMAIL_PORT = '';
 process.env.EMAIL_USER = '';
@@ -10,7 +9,7 @@ process.env.EMAIL_FROM = '';
 
 const { sendInvitationEmail } = await import('../src/utils/email.js');
 
-test('sendInvitationEmail falls back to preview-only when no mail provider is configured', async () => {
+test('sendInvitationEmail falls back to preview-only when SMTP is not configured', async () => {
   const result = await sendInvitationEmail({
     to: 'authority@example.com',
     fullName: 'Road and Development Authority',

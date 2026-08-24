@@ -89,53 +89,12 @@ function invitationContent({ to, fullName, tempPassword, inviteUrl, role, author
   };
 }
 
-function mailFromAddress() {
-  const raw = process.env.EMAIL_FROM || 'Civic Link <onboarding@resend.dev>';
-  return raw.replace(/^["']|["']$/g, '');
-}
-
-async function sendWithResend({ to, from, subject, html, text }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ from, to: [to], subject, html, text }),
-    signal: AbortSignal.timeout(20_000),
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const detail = payload.message || payload.error || response.statusText;
-    throw new Error(`Resend API ${response.status}: ${detail}`);
-  }
-
-  return payload.id;
-}
-
-async function sendWithSmtp({ to, from, subject, html, text }) {
+export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUrl, role, authorityName }) {
   const host = process.env.EMAIL_HOST;
   const port = Number(process.env.EMAIL_PORT || 587);
   const user = process.env.EMAIL_USER;
   const pass = process.env.EMAIL_PASS;
-
-  const transporter = nodemailer.createTransport({
-    ...(await smtpConnectOptions(host, port)),
-    auth: { user, pass },
-  });
-
-  const info = await transporter.sendMail({ from, to, subject, html, text });
-  return info.messageId;
-}
-
-export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUrl, role, authorityName }) {
-  const resendKey = process.env.RESEND_API_KEY;
-  const host = process.env.EMAIL_HOST;
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
-  const from = mailFromAddress();
+  const from = (process.env.EMAIL_FROM || 'Civic Link <no-reply@localhost>').replace(/^["']|["']$/g, '');
   const content = invitationContent({
     to,
     fullName,
@@ -146,23 +105,32 @@ export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUr
   });
   const fallbackHtml = content.html;
 
-  if (!resendKey && (!host || !user || !pass)) {
+  if (!host || !user || !pass) {
     return {
       sent: false,
       message:
-        'Email is not configured. Add RESEND_API_KEY (and EMAIL_FROM) so invitation mail can be sent.',
+        'SMTP is not configured. Email was not sent. Add EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS, EMAIL_FROM to the backend .env file.',
       fallbackHtml,
     };
   }
 
   try {
-    const messageId = resendKey
-      ? await sendWithResend({ to, from, ...content })
-      : await sendWithSmtp({ to, from, ...content });
+    const transporter = nodemailer.createTransport({
+      ...(await smtpConnectOptions(host, port)),
+      auth: { user, pass },
+    });
+
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject: content.subject,
+      html: content.html,
+      text: content.text,
+    });
 
     return {
       sent: true,
-      messageId,
+      messageId: info.messageId,
       message: `Invitation email sent to ${to}`,
       previewUrl: null,
     };
@@ -171,13 +139,11 @@ export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUr
     const detail = `${error.code || ''} ${error.message || ''}`;
     const ipv6Unreachable = /enetunreach|:::/i.test(detail);
     const timedOut = /timeout|etimedout|econnreset|enotfound/i.test(detail);
-    const hint = resendKey
-      ? ' Check RESEND_API_KEY and that EMAIL_FROM uses a verified Resend domain (or onboarding@resend.dev for tests).'
-      : ipv6Unreachable
-        ? ' The server tried Gmail over IPv6, which is not reachable on this network.'
-        : timedOut
-          ? ' Render blocks outbound Gmail SMTP. Set RESEND_API_KEY on the Render service and redeploy.'
-          : '';
+    const hint = ipv6Unreachable
+      ? ' The server tried Gmail over IPv6, which is not reachable on this network.'
+      : timedOut
+        ? ' Connection timed out. Check EMAIL_HOST, EMAIL_PORT, EMAIL_USER, and EMAIL_PASS.'
+        : '';
     return {
       sent: false,
       message: `Email send failed: ${error.message}.${hint}`,
