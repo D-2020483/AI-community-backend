@@ -6,6 +6,7 @@ import {
   generateTemporaryPassword,
 } from "../../utils/password.js";
 import { randomUUID } from "crypto";
+import { authorityNamesMatch } from "../complaints/complaint.helpers.js";
 
 const INVITE_EXPIRY_DAYS = 7;
 const profileInclude = {
@@ -132,7 +133,7 @@ export const createAuthority = async (adminId, data) => {
   });
 
   return {
-    authority,
+    authority: await attachAuthorityCardStats(authority),
     tempPassword,
     inviteUrl: loginUrl,
     loginUrl,
@@ -193,14 +194,62 @@ export const createOfficer = async (adminId, data) => {
   };
 };
 
+function reportStatusKey(status) {
+  return String(status || "")
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+}
+
+function isResolvedReport(status) {
+  const key = reportStatusKey(status);
+  return key === "RESOLVED" || key === "COMPLETED";
+}
+
+function isActiveReport(status) {
+  const key = reportStatusKey(status);
+  return !["RESOLVED", "COMPLETED", "REJECTED"].includes(key);
+}
+
+function complaintsForAuthority(complaints, authority) {
+  return complaints.filter(
+    (complaint) =>
+      complaint.assignedAuthority === authority.id ||
+      authorityNamesMatch(complaint.assignedAuthority, authority.name),
+  );
+}
+
+async function attachAuthorityCardStats(authorities) {
+  const isList = Array.isArray(authorities);
+  const list = (isList ? authorities : [authorities]).filter(Boolean);
+  if (!list.length) return isList ? [] : authorities;
+
+  const complaints = await prisma.complaint.findMany({
+    select: { assignedAuthority: true, status: true },
+  });
+
+  const decorate = (authority) => {
+    const related = complaintsForAuthority(complaints, authority);
+    return {
+      ...authority,
+      officerCount: authority._count?.officers ?? authority.officers?.length ?? 0,
+      activeReports: related.filter((item) => isActiveReport(item.status)).length,
+      resolvedReports: related.filter((item) => isResolvedReport(item.status)).length,
+    };
+  };
+
+  return isList ? list.map(decorate) : decorate(authorities);
+}
+
 export const listAuthorities = async () => {
-  return prisma.authority.findMany({
+  const authorities = await prisma.authority.findMany({
     include: {
       profile: true,
       officers: { include: { profile: true } },
+      _count: { select: { officers: true } },
     },
     orderBy: { createdAt: "desc" },
   });
+  return attachAuthorityCardStats(authorities);
 };
 
 export const listOfficers = async () => {
@@ -270,6 +319,7 @@ export const resetOfficerPassword = async (officerId) => {
 const authorityInclude = {
   profile: true,
   officers: { include: { profile: true } },
+  _count: { select: { officers: true } },
 };
 
 const officerInclude = {
@@ -329,17 +379,21 @@ async function syncProfileEmailAndName(profile, { email, fullName, phone }) {
   });
 }
 
-export const getAuthority = async (authorityId) => {
+async function findAuthorityOrThrow(authorityId) {
   const authority = await prisma.authority.findUnique({
     where: { id: authorityId },
     include: authorityInclude,
   });
   if (!authority) throw new Error("Authority not found");
   return authority;
+}
+
+export const getAuthority = async (authorityId) => {
+  return attachAuthorityCardStats(await findAuthorityOrThrow(authorityId));
 };
 
 export const toggleAuthorityStatus = async (authorityId) => {
-  const authority = await getAuthority(authorityId);
+  const authority = await findAuthorityOrThrow(authorityId);
   const newStatus = authority.status === "Active" ? "Inactive" : "Active";
 
   await prisma.profile.update({
@@ -348,15 +402,16 @@ export const toggleAuthorityStatus = async (authorityId) => {
   });
   await setAuthBan(authority.profileId, newStatus === "Inactive");
 
-  return prisma.authority.update({
+  const updated = await prisma.authority.update({
     where: { id: authorityId },
     data: { status: newStatus },
     include: authorityInclude,
   });
+  return attachAuthorityCardStats(updated);
 };
 
 export const updateAuthority = async (authorityId, data) => {
-  const authority = await getAuthority(authorityId);
+  const authority = await findAuthorityOrThrow(authorityId);
 
   await syncProfileEmailAndName(authority.profile, {
     email: data.email,
@@ -364,7 +419,7 @@ export const updateAuthority = async (authorityId, data) => {
     phone: data.phone,
   });
 
-  return prisma.authority.update({
+  const updated = await prisma.authority.update({
     where: { id: authorityId },
     data: {
       name: data.name || authority.name,
@@ -377,10 +432,11 @@ export const updateAuthority = async (authorityId, data) => {
     },
     include: authorityInclude,
   });
+  return attachAuthorityCardStats(updated);
 };
 
 export const deleteAuthority = async (authorityId) => {
-  const authority = await getAuthority(authorityId);
+  const authority = await findAuthorityOrThrow(authorityId);
 
   for (const officer of authority.officers || []) {
     await safeDeleteAuthUser(officer.profileId);
