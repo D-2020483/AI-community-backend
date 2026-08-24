@@ -273,6 +273,7 @@ export const resetOfficerPassword = async (officerId) => {
   }
 
   const tempPassword = generateTemporaryPassword();
+  const invitationToken = generateInvitationToken();
   const supabaseAdmin = getSupabaseAdmin();
 
   const { error } = await supabaseAdmin.auth.admin.updateUserById(
@@ -290,6 +291,7 @@ export const resetOfficerPassword = async (officerId) => {
       isPasswordSet: false,
       invitationStatus: "PENDING",
       invitedAt: new Date(),
+      invitationToken,
     },
   });
 
@@ -297,7 +299,7 @@ export const resetOfficerPassword = async (officerId) => {
     /\/$/,
     "",
   );
-  const loginUrl = `${frontendUrl}/login?role=officer`;
+  const loginUrl = `${frontendUrl}/login?role=officer&invite=${invitationToken}`;
   const emailStatus = await sendInvitationEmail({
     to: officer.profile.email,
     fullName: officer.profile.fullName,

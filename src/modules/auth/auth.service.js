@@ -107,13 +107,19 @@ export const loginUser = async ({ email, password, expectedRole, inviteToken }) 
   }
 
   if (profile.role === "AUTHORITY" || profile.role === "OFFICER") {
-    if (token && profile.invitationToken !== token) {
-      throw new Error(
-        "This login link has already been used. Open the login page, select your role, and sign in.",
-      );
-    }
-
     if (profile.invitationToken) {
+      if (!token) {
+        throw new Error(
+          "Open the one-time invitation link from your email to sign in for the first time.",
+        );
+      }
+
+      if (profile.invitationToken !== token) {
+        throw new Error(
+          "This login link has already been used. Open the login page, select your role, and sign in.",
+        );
+      }
+
       await prisma.profile.update({
         where: { id: profile.id },
         data: {
@@ -122,6 +128,10 @@ export const loginUser = async ({ email, password, expectedRole, inviteToken }) 
           acceptedAt: profile.acceptedAt || new Date(),
         },
       });
+    } else if (token) {
+      throw new Error(
+        "This login link has already been used. Open the login page, select your role, and sign in.",
+      );
     }
   }
 
