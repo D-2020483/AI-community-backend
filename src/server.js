@@ -1,6 +1,9 @@
+import dns from "node:dns";
 import app from "./app.js";
 import env from "./config/env.js";
 import prisma from "./config/database.js";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const startServer = async () => {
   try {

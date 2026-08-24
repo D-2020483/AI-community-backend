@@ -1,4 +1,30 @@
+import dns from 'node:dns';
+import { lookup } from 'node:dns/promises';
 import nodemailer from 'nodemailer';
+
+// Node 17+ prefers IPv6. Gmail advertises AAAA records, but many Windows
+// and PaaS networks have no IPv6 route (ENETUNREACH ... :::0).
+dns.setDefaultResultOrder('ipv4first');
+
+async function smtpConnectOptions(host, port) {
+  const { address } = await lookup(host, { family: 4 });
+  const numericPort = Number(port);
+
+  return {
+    host: address,
+    port: numericPort,
+    secure: numericPort === 465,
+    requireTLS: numericPort === 587,
+    connectionTimeout: 12_000,
+    greetingTimeout: 12_000,
+    socketTimeout: 20_000,
+    family: 4,
+    tls: {
+      servername: host,
+      minVersion: 'TLSv1.2',
+    },
+  };
+}
 
 function buildEmailHtml({ fullName, email, tempPassword, inviteUrl, role, authorityName }) {
   const roleLabel = role === 'AUTHORITY' ? 'authority' : 'officer';
@@ -71,17 +97,8 @@ export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUr
   }
 
   try {
-    // Render and many PaaS hosts block or stall SMTP on IPv6 / port 587.
-    // Force IPv4 and fail fast so the admin UI can show credentials.
     const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: Number(port) === 465,
-      requireTLS: Number(port) === 587,
-      connectionTimeout: 12_000,
-      greetingTimeout: 12_000,
-      socketTimeout: 20_000,
-      family: 4,
+      ...(await smtpConnectOptions(host, port)),
       auth: {
         user,
         pass,
@@ -111,12 +128,14 @@ export async function sendInvitationEmail({ to, fullName, tempPassword, inviteUr
     };
   } catch (error) {
     console.error('Email send failed:', error);
-    const timedOut = /timeout|etimedout|econnreset|enotfound/i.test(
-      `${error.code || ''} ${error.message || ''}`,
-    );
-    const hint = timedOut
-      ? ' Render often blocks outbound Gmail SMTP (ports 25/587/465). Set FRONTEND_URL to your Vercel URL, then send mail with an HTTPS provider (Resend/SendGrid) or Gmail on port 465.'
-      : '';
+    const detail = `${error.code || ''} ${error.message || ''}`;
+    const ipv6Unreachable = /enetunreach|:::/i.test(detail);
+    const timedOut = /timeout|etimedout|econnreset|enotfound/i.test(detail);
+    const hint = ipv6Unreachable
+      ? ' The server tried Gmail over IPv6, which is not reachable on this network. Restart the backend after this IPv4 fix, then retry.'
+      : timedOut
+        ? ' Render often blocks outbound Gmail SMTP (ports 25/587/465). Use port 465 or an HTTPS mail API (Resend/SendGrid).'
+        : '';
     return {
       sent: false,
       message: `Email send failed: ${error.message}.${hint}`,
