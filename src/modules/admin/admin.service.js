@@ -186,7 +186,7 @@ export const createOfficer = async (adminId, data) => {
   });
 
   return {
-    officer,
+    officer: await attachOfficerReportStats(officer),
     tempPassword: password,
     inviteUrl: loginUrl || inviteUrl,
     loginUrl,
@@ -218,20 +218,74 @@ function complaintsForAuthority(complaints, authority) {
   );
 }
 
+function complaintMatchesOfficer(complaint, officer) {
+  const assigned = String(complaint.assignedOfficer || "")
+    .trim()
+    .toLowerCase();
+  if (!assigned) return false;
+
+  const keys = [
+    officer.id,
+    officer.profileId,
+    officer.profile?.fullName,
+    officer.profile?.email,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).trim().toLowerCase());
+
+  return keys.includes(assigned);
+}
+
+function decorateOfficerWithReportStats(officer, complaints) {
+  const related = complaints.filter((item) =>
+    complaintMatchesOfficer(item, officer),
+  );
+  return {
+    ...officer,
+    activeReports: related.filter((item) => isActiveReport(item.status)).length,
+    completedReports: related.filter((item) => isResolvedReport(item.status))
+      .length,
+  };
+}
+
+async function loadAssignmentComplaints() {
+  return prisma.complaint.findMany({
+    select: {
+      assignedAuthority: true,
+      assignedOfficer: true,
+      status: true,
+    },
+  });
+}
+
+async function attachOfficerReportStats(officers) {
+  const isList = Array.isArray(officers);
+  const list = (isList ? officers : [officers]).filter(Boolean);
+  if (!list.length) return isList ? [] : officers;
+
+  const complaints = await loadAssignmentComplaints();
+  const decorate = (officer) =>
+    decorateOfficerWithReportStats(officer, complaints);
+
+  return isList ? list.map(decorate) : decorate(officers);
+}
+
 async function attachAuthorityCardStats(authorities) {
   const isList = Array.isArray(authorities);
   const list = (isList ? authorities : [authorities]).filter(Boolean);
   if (!list.length) return isList ? [] : authorities;
 
-  const complaints = await prisma.complaint.findMany({
-    select: { assignedAuthority: true, status: true },
-  });
+  const complaints = await loadAssignmentComplaints();
 
   const decorate = (authority) => {
     const related = complaintsForAuthority(complaints, authority);
+    const officers = (authority.officers || []).map((officer) =>
+      decorateOfficerWithReportStats(officer, complaints),
+    );
     return {
       ...authority,
-      officerCount: authority._count?.officers ?? authority.officers?.length ?? 0,
+      officers,
+      officerCount: authority._count?.officers ?? officers.length,
       activeReports: related.filter((item) => isActiveReport(item.status)).length,
       resolvedReports: related.filter((item) => isResolvedReport(item.status)).length,
     };
@@ -253,13 +307,14 @@ export const listAuthorities = async () => {
 };
 
 export const listOfficers = async () => {
-  return prisma.officer.findMany({
+  const officers = await prisma.officer.findMany({
     include: {
       profile: true,
       authority: true,
     },
     orderBy: { createdAt: "desc" },
   });
+  return attachOfficerReportStats(officers);
 };
 
 export const resetOfficerPassword = async (officerId) => {
@@ -459,7 +514,7 @@ export const getOfficer = async (officerId) => {
     include: officerInclude,
   });
   if (!officer) throw new Error("Officer not found");
-  return officer;
+  return attachOfficerReportStats(officer);
 };
 
 export const toggleOfficerStatus = async (officerId) => {
@@ -472,11 +527,12 @@ export const toggleOfficerStatus = async (officerId) => {
   });
   await setAuthBan(officer.profileId, newStatus === "Inactive");
 
-  return prisma.officer.update({
+  const updated = await prisma.officer.update({
     where: { id: officerId },
     data: { status: newStatus },
     include: officerInclude,
   });
+  return attachOfficerReportStats(updated);
 };
 
 export const updateOfficer = async (officerId, data) => {
@@ -496,7 +552,7 @@ export const updateOfficer = async (officerId, data) => {
     phone: data.phone,
   });
 
-  return prisma.officer.update({
+  const updated = await prisma.officer.update({
     where: { id: officerId },
     data: {
       position: data.position !== undefined ? data.position || null : officer.position,
@@ -506,6 +562,7 @@ export const updateOfficer = async (officerId, data) => {
     },
     include: officerInclude,
   });
+  return attachOfficerReportStats(updated);
 };
 
 export const deleteOfficer = async (officerId) => {
