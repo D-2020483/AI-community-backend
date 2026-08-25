@@ -1,6 +1,7 @@
 import prisma from "../../config/database.js";
 import { getSupabaseAdmin } from "../../config/supabaseAdmin.js";
 import { sendInvitationEmail } from "../../utils/email.js";
+import { buildInviteUrl } from "../../utils/frontendUrl.js";
 import {
   generateInvitationToken,
   generateTemporaryPassword,
@@ -22,6 +23,7 @@ async function createInvitedUser({
   createdBy,
   tempPassword,
   markPasswordSet = false,
+  frontendUrl,
 }) {
   const normalizedEmail = email.toLowerCase().trim();
   const invitationToken = generateInvitationToken();
@@ -70,12 +72,7 @@ async function createInvitedUser({
       include: profileInclude,
     });
 
-    const frontendUrl = (process.env.FRONTEND_URL || "https://civic-link-frontkend.vercel.app").replace(
-      /\/$/,
-      "",
-    );
-    const roleParam = String(role || "").toLowerCase();
-    const loginUrl = `${frontendUrl}/login?role=${roleParam}&invite=${invitationToken}`;
+    const loginUrl = buildInviteUrl(frontendUrl, invitationToken);
     const inviteUrl = loginUrl;
 
     return {
@@ -91,7 +88,7 @@ async function createInvitedUser({
   }
 }
 
-export const createAuthority = async (adminId, data) => {
+export const createAuthority = async (adminId, data, frontendUrl) => {
   const password = generateTemporaryPassword();
   const { profile, tempPassword, loginUrl } =
     await createInvitedUser({
@@ -101,7 +98,8 @@ export const createAuthority = async (adminId, data) => {
       role: "AUTHORITY",
       createdBy: adminId,
       tempPassword: password,
-      markPasswordSet: true,
+      markPasswordSet: false,
+      frontendUrl,
     });
 
   const authority = await prisma.authority.create({
@@ -141,7 +139,7 @@ export const createAuthority = async (adminId, data) => {
   };
 };
 
-export const createOfficer = async (adminId, data) => {
+export const createOfficer = async (adminId, data, frontendUrl) => {
   const authority = await prisma.authority.findUnique({
     where: { id: data.authorityId },
   });
@@ -160,7 +158,8 @@ export const createOfficer = async (adminId, data) => {
       role: "OFFICER",
       createdBy: adminId,
       tempPassword,
-      markPasswordSet: true,
+      markPasswordSet: false,
+      frontendUrl,
     });
 
   const officer = await prisma.officer.create({
@@ -317,7 +316,7 @@ export const listOfficers = async () => {
   return attachOfficerReportStats(officers);
 };
 
-export const resetOfficerPassword = async (officerId) => {
+export const resetOfficerPassword = async (officerId, frontendUrl) => {
   const officer = await prisma.officer.findUnique({
     where: { id: officerId },
     include: { profile: true, authority: true },
@@ -350,11 +349,7 @@ export const resetOfficerPassword = async (officerId) => {
     },
   });
 
-  const frontendUrl = (process.env.FRONTEND_URL || "https://civic-link-frontkend.vercel.app").replace(
-    /\/$/,
-    "",
-  );
-  const loginUrl = `${frontendUrl}/login?role=officer&invite=${invitationToken}`;
+  const loginUrl = buildInviteUrl(frontendUrl, invitationToken);
   const emailStatus = await sendInvitationEmail({
     to: officer.profile.email,
     fullName: officer.profile.fullName,

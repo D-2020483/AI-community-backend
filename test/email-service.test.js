@@ -21,4 +21,5 @@ test('sendInvitationEmail falls back to preview-only when SMTP is not configured
 
   assert.equal(result.sent, false);
   assert.match(result.message, /not configured/i);
+  assert.match(result.fallbackHtml, /accept-invite\?token=test-token/);
 });

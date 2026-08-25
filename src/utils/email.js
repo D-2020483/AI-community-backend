@@ -46,10 +46,10 @@ function buildEmailHtml({ fullName, email, tempPassword, inviteUrl, role, author
           </div>
           <div style="padding:32px;">
             <p style="font-size:14px;line-height:1.7;color:#475569;">Hello <strong>${fullName}</strong>,</p>
-            <p style="font-size:14px;line-height:1.7;color:#475569;">Your ${roleLabel} account has been created on the <strong>Civic Link</strong> platform${authorityText}. Sign in with the official email and password below to open your ${roleLabel} workspace.</p>
+            <p style="font-size:14px;line-height:1.7;color:#475569;">Your ${roleLabel} account has been created on the <strong>Civic Link</strong> platform${authorityText}. Open the invitation link below to set your password and activate your ${roleLabel} workspace.</p>
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0;">
               <div style="padding:10px 0;border-bottom:1px solid #eef2f7;">
-                <div style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Login URL</div>
+                <div style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Invitation link</div>
                 <a href="${inviteUrl}" style="font-size:14px;font-weight:700;color:#4f46e5;text-decoration:none;word-break:break-all;">${inviteUrl}</a>
               </div>
               <div style="padding:10px 0;border-bottom:1px solid #eef2f7;">
@@ -61,8 +61,8 @@ function buildEmailHtml({ fullName, email, tempPassword, inviteUrl, role, author
                 <div style="font-size:14px;font-weight:700;color:#4f46e5;background:#eef2ff;padding:6px 10px;border-radius:6px;display:inline-block;margin-top:4px;">${tempPassword}</div>
               </div>
             </div>
-            <p style="font-size:14px;line-height:1.7;color:#475569;"><strong>Important:</strong> Open the login link, select <strong>${roleLabel}</strong> (the blue button), then sign in with your official email and this password. This login link can be used only once.</p>
-            <p style="margin-top:18px;"><a href="${inviteUrl}" style="display:inline-block;background:#4f46e5;color:#ffffff !important;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;">Open login page</a></p>
+            <p style="font-size:14px;line-height:1.7;color:#475569;"><strong>Important:</strong> Open the invitation link and set a new password to activate your account. This link can be used only once.</p>
+            <p style="margin-top:18px;"><a href="${inviteUrl}" style="display:inline-block;background:#4f46e5;color:#ffffff !important;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;">Accept invitation</a></p>
           </div>
           <div style="padding:20px 32px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;">
             <p>This is an automated message from Civic Link. Please do not reply.</p>
@@ -85,7 +85,7 @@ function invitationContent({ to, fullName, tempPassword, inviteUrl, role, author
       role,
       authorityName,
     }),
-    text: `Hello ${fullName},\n\nYour Civic Link ${role === "AUTHORITY" ? "authority" : "officer"} account is ready.\nLogin page: ${inviteUrl}\nEmail: ${to}\nPassword: ${tempPassword}\n`,
+    text: `Hello ${fullName},\n\nYour Civic Link ${role === "AUTHORITY" ? "authority" : "officer"} account is ready.\nInvitation link: ${inviteUrl}\nEmail: ${to}\nTemporary password: ${tempPassword}\n`,
   };
 }
 

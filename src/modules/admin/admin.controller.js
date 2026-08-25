@@ -40,11 +40,16 @@ import {
   updateCategorySchema,
   updateReportSchema,
 } from "./admin.validation.js";
+import { frontendUrlFromRequest } from "../../utils/frontendUrl.js";
 
 export const postAuthority = async (req, res, next) => {
   try {
     const data = createAuthoritySchema.parse(req.body);
-    const result = await createAuthority(req.profile.id, data);
+    const result = await createAuthority(
+      req.profile.id,
+      data,
+      frontendUrlFromRequest(req),
+    );
     res.status(201).json({
       success: true,
       message: "Authority created successfully",
@@ -58,7 +63,11 @@ export const postAuthority = async (req, res, next) => {
 export const postOfficer = async (req, res, next) => {
   try {
     const data = createOfficerSchema.parse(req.body);
-    const result = await createOfficer(req.profile.id, data);
+    const result = await createOfficer(
+      req.profile.id,
+      data,
+      frontendUrlFromRequest(req),
+    );
     res.status(201).json({
       success: true,
       message: "Officer created successfully",
@@ -89,7 +98,10 @@ export const getOfficers = async (req, res, next) => {
 
 export const postResetOfficerPassword = async (req, res, next) => {
   try {
-    const result = await resetOfficerPassword(req.params.officerId);
+    const result = await resetOfficerPassword(
+      req.params.officerId,
+      frontendUrlFromRequest(req),
+    );
     res.status(200).json({
       success: true,
       message: "Temporary password reset successfully",
