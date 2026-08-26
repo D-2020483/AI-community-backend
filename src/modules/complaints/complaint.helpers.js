@@ -1,5 +1,35 @@
 import prisma from "../../config/database.js";
 
+export function parseStoredCoords(report = {}) {
+  const lat = report.latitude ?? report.lat;
+  const lng = report.longitude ?? report.lng;
+  const latitude = Number(lat);
+  const longitude = Number(lng);
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    return null;
+  }
+  return { lat: latitude, lng: longitude };
+}
+
+export function complaintLocationFields(report = {}) {
+  const coords = parseStoredCoords(report);
+  return {
+    location: report.location || "",
+    locationName: report.location || "",
+    latitude: coords?.lat ?? null,
+    longitude: coords?.lng ?? null,
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
+  };
+}
+
 export function formatLabel(value, fallback) {
   if (!value) return fallback;
   const key = String(value).toUpperCase().replace(/[\s-]+/g, "_");
@@ -241,7 +271,7 @@ export function formatComplaintForStaff(report, citizen) {
     dbId: report.id,
     title: report.detectedIssue || report.category,
     description: report.description,
-    location: report.location,
+    ...complaintLocationFields(report),
     imageUrl: report.imageUrl,
     image: report.imageUrl,
     category: report.category,

@@ -4862,10 +4862,14 @@ export namespace Prisma {
   }
 
   export type ComplaintAvgAggregateOutputType = {
+    latitude: number | null
+    longitude: number | null
     confidence: number | null
   }
 
   export type ComplaintSumAggregateOutputType = {
+    latitude: number | null
+    longitude: number | null
     confidence: number | null
   }
 
@@ -4874,6 +4878,8 @@ export namespace Prisma {
     reportId: string | null
     description: string | null
     location: string | null
+    latitude: number | null
+    longitude: number | null
     imageUrl: string | null
     category: string | null
     assignedAuthority: string | null
@@ -4893,6 +4899,8 @@ export namespace Prisma {
     reportId: string | null
     description: string | null
     location: string | null
+    latitude: number | null
+    longitude: number | null
     imageUrl: string | null
     category: string | null
     assignedAuthority: string | null
@@ -4912,6 +4920,8 @@ export namespace Prisma {
     reportId: number
     description: number
     location: number
+    latitude: number
+    longitude: number
     imageUrl: number
     category: number
     assignedAuthority: number
@@ -4930,10 +4940,14 @@ export namespace Prisma {
 
 
   export type ComplaintAvgAggregateInputType = {
+    latitude?: true
+    longitude?: true
     confidence?: true
   }
 
   export type ComplaintSumAggregateInputType = {
+    latitude?: true
+    longitude?: true
     confidence?: true
   }
 
@@ -4942,6 +4956,8 @@ export namespace Prisma {
     reportId?: true
     description?: true
     location?: true
+    latitude?: true
+    longitude?: true
     imageUrl?: true
     category?: true
     assignedAuthority?: true
@@ -4961,6 +4977,8 @@ export namespace Prisma {
     reportId?: true
     description?: true
     location?: true
+    latitude?: true
+    longitude?: true
     imageUrl?: true
     category?: true
     assignedAuthority?: true
@@ -4980,6 +4998,8 @@ export namespace Prisma {
     reportId?: true
     description?: true
     location?: true
+    latitude?: true
+    longitude?: true
     imageUrl?: true
     category?: true
     assignedAuthority?: true
@@ -5087,6 +5107,8 @@ export namespace Prisma {
     reportId: string
     description: string
     location: string
+    latitude: number | null
+    longitude: number | null
     imageUrl: string | null
     category: string
     assignedAuthority: string
@@ -5126,6 +5148,8 @@ export namespace Prisma {
     reportId?: boolean
     description?: boolean
     location?: boolean
+    latitude?: boolean
+    longitude?: boolean
     imageUrl?: boolean
     category?: boolean
     assignedAuthority?: boolean
@@ -5146,6 +5170,8 @@ export namespace Prisma {
     reportId?: boolean
     description?: boolean
     location?: boolean
+    latitude?: boolean
+    longitude?: boolean
     imageUrl?: boolean
     category?: boolean
     assignedAuthority?: boolean
@@ -5166,6 +5192,8 @@ export namespace Prisma {
     reportId?: boolean
     description?: boolean
     location?: boolean
+    latitude?: boolean
+    longitude?: boolean
     imageUrl?: boolean
     category?: boolean
     assignedAuthority?: boolean
@@ -5186,6 +5214,8 @@ export namespace Prisma {
     reportId?: boolean
     description?: boolean
     location?: boolean
+    latitude?: boolean
+    longitude?: boolean
     imageUrl?: boolean
     category?: boolean
     assignedAuthority?: boolean
@@ -5201,7 +5231,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ComplaintOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reportId" | "description" | "location" | "imageUrl" | "category" | "assignedAuthority" | "detectedIssue" | "priority" | "confidence" | "reason" | "status" | "assignedOfficer" | "timeline" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["complaint"]>
+  export type ComplaintOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reportId" | "description" | "location" | "latitude" | "longitude" | "imageUrl" | "category" | "assignedAuthority" | "detectedIssue" | "priority" | "confidence" | "reason" | "status" | "assignedOfficer" | "timeline" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["complaint"]>
 
   export type $ComplaintPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Complaint"
@@ -5211,6 +5241,8 @@ export namespace Prisma {
       reportId: string
       description: string
       location: string
+      latitude: number | null
+      longitude: number | null
       imageUrl: string | null
       category: string
       assignedAuthority: string
@@ -5651,6 +5683,8 @@ export namespace Prisma {
     readonly reportId: FieldRef<"Complaint", 'String'>
     readonly description: FieldRef<"Complaint", 'String'>
     readonly location: FieldRef<"Complaint", 'String'>
+    readonly latitude: FieldRef<"Complaint", 'Float'>
+    readonly longitude: FieldRef<"Complaint", 'Float'>
     readonly imageUrl: FieldRef<"Complaint", 'String'>
     readonly category: FieldRef<"Complaint", 'String'>
     readonly assignedAuthority: FieldRef<"Complaint", 'String'>
@@ -7147,6 +7181,8 @@ export namespace Prisma {
     reportId: 'reportId',
     description: 'description',
     location: 'location',
+    latitude: 'latitude',
+    longitude: 'longitude',
     imageUrl: 'imageUrl',
     category: 'category',
     assignedAuthority: 'assignedAuthority',
@@ -7620,6 +7656,8 @@ export namespace Prisma {
     reportId?: StringFilter<"Complaint"> | string
     description?: StringFilter<"Complaint"> | string
     location?: StringFilter<"Complaint"> | string
+    latitude?: FloatNullableFilter<"Complaint"> | number | null
+    longitude?: FloatNullableFilter<"Complaint"> | number | null
     imageUrl?: StringNullableFilter<"Complaint"> | string | null
     category?: StringFilter<"Complaint"> | string
     assignedAuthority?: StringFilter<"Complaint"> | string
@@ -7640,6 +7678,8 @@ export namespace Prisma {
     reportId?: SortOrder
     description?: SortOrder
     location?: SortOrder
+    latitude?: SortOrderInput | SortOrder
+    longitude?: SortOrderInput | SortOrder
     imageUrl?: SortOrderInput | SortOrder
     category?: SortOrder
     assignedAuthority?: SortOrder
@@ -7663,6 +7703,8 @@ export namespace Prisma {
     NOT?: ComplaintWhereInput | ComplaintWhereInput[]
     description?: StringFilter<"Complaint"> | string
     location?: StringFilter<"Complaint"> | string
+    latitude?: FloatNullableFilter<"Complaint"> | number | null
+    longitude?: FloatNullableFilter<"Complaint"> | number | null
     imageUrl?: StringNullableFilter<"Complaint"> | string | null
     category?: StringFilter<"Complaint"> | string
     assignedAuthority?: StringFilter<"Complaint"> | string
@@ -7683,6 +7725,8 @@ export namespace Prisma {
     reportId?: SortOrder
     description?: SortOrder
     location?: SortOrder
+    latitude?: SortOrderInput | SortOrder
+    longitude?: SortOrderInput | SortOrder
     imageUrl?: SortOrderInput | SortOrder
     category?: SortOrder
     assignedAuthority?: SortOrder
@@ -7711,6 +7755,8 @@ export namespace Prisma {
     reportId?: StringWithAggregatesFilter<"Complaint"> | string
     description?: StringWithAggregatesFilter<"Complaint"> | string
     location?: StringWithAggregatesFilter<"Complaint"> | string
+    latitude?: FloatNullableWithAggregatesFilter<"Complaint"> | number | null
+    longitude?: FloatNullableWithAggregatesFilter<"Complaint"> | number | null
     imageUrl?: StringNullableWithAggregatesFilter<"Complaint"> | string | null
     category?: StringWithAggregatesFilter<"Complaint"> | string
     assignedAuthority?: StringWithAggregatesFilter<"Complaint"> | string
@@ -8122,6 +8168,8 @@ export namespace Prisma {
     reportId: string
     description: string
     location: string
+    latitude?: number | null
+    longitude?: number | null
     imageUrl?: string | null
     category: string
     assignedAuthority: string
@@ -8142,6 +8190,8 @@ export namespace Prisma {
     reportId: string
     description: string
     location: string
+    latitude?: number | null
+    longitude?: number | null
     imageUrl?: string | null
     category: string
     assignedAuthority: string
@@ -8162,6 +8212,8 @@ export namespace Prisma {
     reportId?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     location?: StringFieldUpdateOperationsInput | string
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     category?: StringFieldUpdateOperationsInput | string
     assignedAuthority?: StringFieldUpdateOperationsInput | string
@@ -8182,6 +8234,8 @@ export namespace Prisma {
     reportId?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     location?: StringFieldUpdateOperationsInput | string
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     category?: StringFieldUpdateOperationsInput | string
     assignedAuthority?: StringFieldUpdateOperationsInput | string
@@ -8202,6 +8256,8 @@ export namespace Prisma {
     reportId: string
     description: string
     location: string
+    latitude?: number | null
+    longitude?: number | null
     imageUrl?: string | null
     category: string
     assignedAuthority: string
@@ -8222,6 +8278,8 @@ export namespace Prisma {
     reportId?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     location?: StringFieldUpdateOperationsInput | string
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     category?: StringFieldUpdateOperationsInput | string
     assignedAuthority?: StringFieldUpdateOperationsInput | string
@@ -8242,6 +8300,8 @@ export namespace Prisma {
     reportId?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     location?: StringFieldUpdateOperationsInput | string
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     category?: StringFieldUpdateOperationsInput | string
     assignedAuthority?: StringFieldUpdateOperationsInput | string
@@ -8706,6 +8766,8 @@ export namespace Prisma {
     reportId?: SortOrder
     description?: SortOrder
     location?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
     imageUrl?: SortOrder
     category?: SortOrder
     assignedAuthority?: SortOrder
@@ -8722,6 +8784,8 @@ export namespace Prisma {
   }
 
   export type ComplaintAvgOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
     confidence?: SortOrder
   }
 
@@ -8730,6 +8794,8 @@ export namespace Prisma {
     reportId?: SortOrder
     description?: SortOrder
     location?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
     imageUrl?: SortOrder
     category?: SortOrder
     assignedAuthority?: SortOrder
@@ -8749,6 +8815,8 @@ export namespace Prisma {
     reportId?: SortOrder
     description?: SortOrder
     location?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
     imageUrl?: SortOrder
     category?: SortOrder
     assignedAuthority?: SortOrder
@@ -8764,6 +8832,8 @@ export namespace Prisma {
   }
 
   export type ComplaintSumOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
     confidence?: SortOrder
   }
 

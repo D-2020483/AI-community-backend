@@ -7,7 +7,7 @@ import {
   generateTemporaryPassword,
 } from "../../utils/password.js";
 import { randomUUID } from "crypto";
-import { authorityNamesMatch } from "../complaints/complaint.helpers.js";
+import { authorityNamesMatch, complaintLocationFields } from "../complaints/complaint.helpers.js";
 
 const INVITE_EXPIRY_DAYS = 7;
 const profileInclude = {
@@ -800,8 +800,7 @@ export const mapAdminReport = (report, citizen) => {
     updated: formatJoinedDate(report.updatedAt),
     district: citizen?.district || "—",
     location: report.location,
-    lat: null,
-    lng: null,
+    ...complaintLocationFields(report),
     aiCategory: report.category,
     confidence,
     description: report.description,

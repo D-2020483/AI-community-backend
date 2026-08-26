@@ -170,6 +170,8 @@ exports.Prisma.ComplaintScalarFieldEnum = {
   reportId: 'reportId',
   description: 'description',
   location: 'location',
+  latitude: 'latitude',
+  longitude: 'longitude',
   imageUrl: 'imageUrl',
   category: 'category',
   assignedAuthority: 'assignedAuthority',

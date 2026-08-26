@@ -1,9 +1,11 @@
 import prisma from "../../config/database.js";
+import { isValidCoordPair } from "../../utils/geocode.js";
 import {
   applyComplaintUpdate,
   attachCitizens,
   authorityNamesMatch,
   buildWorkspaceNotifications,
+  complaintLocationFields,
   defaultTimeline,
   ensureTimeline,
   findComplaint,
@@ -13,6 +15,7 @@ import {
   getLoggedInAuthorityName,
   isAssignedToOfficer,
   listAuthorityReports,
+  parseStoredCoords,
   statusToDb,
 } from "./complaint.helpers.js";
 
@@ -31,6 +34,11 @@ export const createAndTrackReport = async (req, res, next) => {
       reportId,
       description,
       location,
+      locationName,
+      latitude,
+      longitude,
+      lat,
+      lng,
       imageUrl,
       category,
       authority,
@@ -41,10 +49,25 @@ export const createAndTrackReport = async (req, res, next) => {
       status,
     } = req.body;
 
-    if (!description?.trim() || !location?.trim()) {
+    const resolvedLocation = String(locationName || location || "").trim();
+    const coords = parseStoredCoords({
+      latitude,
+      longitude,
+      lat,
+      lng,
+    });
+
+    if (!description?.trim() || !resolvedLocation) {
       return res.status(400).json({
         success: false,
         message: "Description and location are required.",
+      });
+    }
+
+    if (!coords || !isValidCoordPair(coords.lat, coords.lng)) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid incident location with latitude and longitude is required.",
       });
     }
 
@@ -57,7 +80,9 @@ export const createAndTrackReport = async (req, res, next) => {
 
     const payload = {
       description: description.trim(),
-      location: location.trim(),
+      location: resolvedLocation,
+      latitude: coords.lat,
+      longitude: coords.lng,
       imageUrl: imageUrl || null,
       category: category || "OTHER",
       assignedAuthority: authority || "Manual Review Required",
@@ -165,7 +190,7 @@ export const getUserReports = async (req, res, next) => {
       reportId: r.reportId || r.id,
       title: r.detectedIssue || r.category,
       description: r.description,
-      location: r.location,
+      ...complaintLocationFields(r),
       imageUrl: r.imageUrl,
       category: r.category,
       authority: r.assignedAuthority,

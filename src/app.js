@@ -8,6 +8,7 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import adminRoutes from "./modules/admin/admin.routes.js";
 import complaintRoutes from "./modules/complaints/complaint.routes.js";
 import officerRoutes from "./modules/officer/officer.routes.js";
+import placesRoutes from "./modules/places/places.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { authenticate } from "./middleware/auth.middleware.js";
 import { getPublicCategories } from "./modules/admin/admin.controller.js";
@@ -49,6 +50,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/complaints", complaintRoutes);
 
 app.use("/api/officer", officerRoutes);
+
+app.use("/api/places", placesRoutes);
 
 app.use(errorHandler);
 
