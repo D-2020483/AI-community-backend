@@ -1,4 +1,5 @@
 import {
+  getDrivingRoute,
   isValidCoordPair,
   reverseGeocode,
   searchPlaces,
@@ -30,6 +31,27 @@ export const reverseGeocodeHandler = async (req, res, next) => {
     }
 
     const result = await reverseGeocode(lat, lng);
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const drivingRouteHandler = async (req, res, next) => {
+  try {
+    const fromLat = req.query.fromLat ?? req.query.originLat;
+    const fromLng = req.query.fromLng ?? req.query.originLng;
+    const toLat = req.query.toLat ?? req.query.destLat;
+    const toLng = req.query.toLng ?? req.query.destLng;
+
+    if (!isValidCoordPair(fromLat, fromLng) || !isValidCoordPair(toLat, toLng)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid origin and destination coordinates are required.",
+      });
+    }
+
+    const result = await getDrivingRoute(fromLat, fromLng, toLat, toLng);
     return res.status(200).json({ success: true, data: result });
   } catch (error) {
     next(error);

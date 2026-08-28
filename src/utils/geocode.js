@@ -61,4 +61,60 @@ export async function reverseGeocode(lat, lng) {
   return mapHit(data);
 }
 
+const OSRM_BASE = "https://router.project-osrm.org";
+
+function mapOsrmRoute(payload) {
+  const route = Array.isArray(payload?.routes) ? payload.routes[0] : null;
+  const coords = route?.geometry?.coordinates;
+  if (!Array.isArray(coords) || coords.length < 2) return null;
+
+  const coordinates = coords
+    .map((pair) => {
+      const lng = Number(pair?.[0]);
+      const lat = Number(pair?.[1]);
+      if (!isValidCoordPair(lat, lng)) return null;
+      return { lat, lng };
+    })
+    .filter(Boolean);
+
+  if (coordinates.length < 2) return null;
+
+  const distanceMeters = Number(route.distance);
+  const durationSeconds = Number(route.duration);
+
+  return {
+    coordinates,
+    distanceMeters: Number.isFinite(distanceMeters) ? distanceMeters : null,
+    durationSeconds: Number.isFinite(durationSeconds) ? durationSeconds : null,
+  };
+}
+
+export async function getDrivingRoute(fromLat, fromLng, toLat, toLng) {
+  if (
+    !isValidCoordPair(fromLat, fromLng) ||
+    !isValidCoordPair(toLat, toLng)
+  ) {
+    return null;
+  }
+
+  const path = `${Number(fromLng)},${Number(fromLat)};${Number(toLng)},${Number(toLat)}`;
+  const response = await fetch(
+    `${OSRM_BASE}/route/v1/driving/${path}?overview=full&geometries=geojson`,
+    {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": USER_AGENT,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = new Error("Route calculation is temporarily unavailable.");
+    error.statusCode = response.status >= 500 ? 502 : response.status;
+    throw error;
+  }
+
+  return mapOsrmRoute(await response.json());
+}
+
 export { isValidCoordPair };
